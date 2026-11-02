@@ -1,6 +1,5 @@
 package fr.efrei.residence;
 
-import fr.efrei.residence.contrat.Canal;
 import fr.efrei.residence.contrat.DemandeAttribution;
 import fr.efrei.residence.contrat.DemandeDevis;
 import fr.efrei.residence.contrat.DemandeInscription;
@@ -9,7 +8,6 @@ import fr.efrei.residence.contrat.EtatBail;
 import fr.efrei.residence.contrat.EtatLogement;
 import fr.efrei.residence.contrat.Notification;
 import fr.efrei.residence.contrat.Option;
-import fr.efrei.residence.contrat.StatutBail;
 import fr.efrei.residence.contrat.SystemeResidence;
 import fr.efrei.residence.contrat.TypeLogement;
 
@@ -50,7 +48,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
     @Override
     public Optional<String> inscrire(DemandeInscription d) {
         Etudiant e = gestion.inscrireEtudiant(d.nom(), d.prenom(), d.email(), d.telephone(), d.adresse(),
-                d.profil().name(), d.echelonBourse(), d.ressourcesMensuelles(), d.pmr(), d.canalPrefere().name());
+                d.profil().name(), d.echelonBourse(), d.ressourcesMensuelles(), d.pmr(), Canal.valueOf(d.canalPrefere().name()));
         return Optional.ofNullable(e).map(Etudiant::getId);
     }
 
@@ -106,7 +104,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
         if (b == null) {
             return Optional.empty();
         }
-        return Optional.of(new EtatBail(b.getId(), b.getLogement().getNumero(), StatutBail.valueOf(b.getStatut()),
+        return Optional.of(new EtatBail(b.getId(), b.getLogement().getNumero(), fr.efrei.residence.contrat.StatutBail.valueOf(b.getStatut().name()),
                 b.getLoyerHorsCharges(), b.getCharges(), b.getLoyerChargesComprises(), b.getCaution(),
                 b.getFraisDossier(), b.getDateFin(), b.soldeDu, b.cautionRestituee));
     }
@@ -155,13 +153,13 @@ public class NouveauSystemeAdapter implements SystemeResidence {
     public List<Notification> notifications() {
         List<Notification> notifications = new ArrayList<>();
         for (String[] email : EmailService.journal) {
-            notifications.add(new Notification(Canal.EMAIL, email[0], email[1]));
+            notifications.add(new Notification(fr.efrei.residence.contrat.Canal.EMAIL, email[0], email[1]));
         }
         for (String[] sms : SmsService.journal) {
-            notifications.add(new Notification(Canal.SMS, sms[0], sms[1]));
+            notifications.add(new Notification(fr.efrei.residence.contrat.Canal.SMS, sms[0], sms[1]));
         }
         for (String[] courrier : CourrierService.journal) {
-            notifications.add(new Notification(Canal.COURRIER, courrier[0], courrier[1]));
+            notifications.add(new Notification(fr.efrei.residence.contrat.Canal.COURRIER, courrier[0], courrier[1]));
         }
         return notifications;
     }

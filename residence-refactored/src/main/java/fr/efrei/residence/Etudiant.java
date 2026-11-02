@@ -14,10 +14,10 @@ public class Etudiant {
     private int echelonBourse; // 0 à 7, seulement pour les boursiers
     private double ressourcesMensuelles;
     private boolean pmr;
-    private String canalPrefere; // EMAIL, SMS, COURRIER
+    private Canal canalPrefere;
 
     public Etudiant(String nom, String prenom, String email, String telephone, String adresse, String profil,
-                    int echelonBourse, double ressourcesMensuelles, boolean pmr, String canalPrefere) {
+                    int echelonBourse, double ressourcesMensuelles, boolean pmr, Canal canalPrefere) {
         compteur++;
         this.id = "ETU-" + compteur;
         this.nom = nom;
@@ -44,6 +44,6 @@ public class Etudiant {
     public int getEchelonBourse() { return echelonBourse; }
     public double getRessourcesMensuelles() { return ressourcesMensuelles; }
     public boolean isPmr() { return pmr; }
-    public String getCanalPrefere() { return canalPrefere; }
-    public void setCanalPrefere(String canalPrefere) { this.canalPrefere = canalPrefere; }
+    public Canal getCanalPrefere() { return canalPrefere; }
+    public void setCanalPrefere(Canal canalPrefere) { this.canalPrefere = canalPrefere; }
 }
