@@ -46,8 +46,9 @@ public class NouveauSystemeAdapter implements SystemeResidence {
 
     @Override
     public Optional<String> inscrire(DemandeInscription d) {
+        Profil profil = d.profil() == null ? null : Profil.valueOf(d.profil().name());
         Etudiant e = gestion.inscrireEtudiant(d.nom(), d.prenom(), d.email(), d.telephone(), d.adresse(),
-                d.profil().name(), d.echelonBourse(), d.ressourcesMensuelles(), d.pmr(), Canal.valueOf(d.canalPrefere().name()));
+                profil, d.echelonBourse(), d.ressourcesMensuelles(), d.pmr(), Canal.valueOf(d.canalPrefere().name()));
         return Optional.ofNullable(e).map(Etudiant::getId);
     }
 
@@ -80,7 +81,8 @@ public class NouveauSystemeAdapter implements SystemeResidence {
             return OptionalDouble.empty();
         }
         Set<Option> o = d.options();
-        return OptionalDouble.of(new CalculateurLoyer().calculerLoyer(l, d.profil().name(), d.echelonBourse(),
+        Profil profil = d.profil() == null ? null : Profil.valueOf(d.profil().name());
+        return OptionalDouble.of(new CalculateurLoyer().calculerLoyer(l, profil, d.echelonBourse(),
                 o.contains(Option.PARKING), o.contains(Option.MENAGE), o.contains(Option.LAVERIE),
                 o.contains(Option.FIBRE), o.contains(Option.ASSURANCE)));
     }
