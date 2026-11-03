@@ -13,6 +13,7 @@ public class GestionResidence {
 
     private Database db = Database.getInstance();
     private CalculateurLoyer calculateur = new CalculateurLoyer();
+    private LogementFactory fabriqueLogement = new LogementFactory();
 
     // ------------------------------------------------------------------ étudiants
 
@@ -66,21 +67,7 @@ public class GestionResidence {
             System.out.println("Logement " + numero + " existe déjà");
             return null;
         }
-        Logement l = null;
-        if (type == TypeLogement.STUDIO) {
-            l = new Studio(numero, surface, etage, meuble);
-        } else if (type == TypeLogement.T1) {
-            l = new T1(numero, surface, etage, meuble);
-        } else if (type == TypeLogement.T2) {
-            l = new T2(numero, surface, etage, meuble, param);
-        } else if (type == TypeLogement.COLOCATION) {
-            if (param < Colocation.PLACES_MIN) param = Colocation.PLACES_MIN;
-            l = new Colocation(numero, surface, etage, meuble, param);
-        }
-        if (l == null) {
-            System.out.println("Type de logement inconnu : " + type);
-            return null;
-        }
+        Logement l = fabriqueLogement.creer(type, numero, surface, etage, meuble, param);
         Residence.logements.add(l);
         System.out.println("Logement ajouté : " + numero + " (" + type + ")");
         return l;
