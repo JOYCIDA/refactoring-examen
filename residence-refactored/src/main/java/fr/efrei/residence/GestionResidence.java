@@ -2,7 +2,9 @@ package fr.efrei.residence;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service principal de la résidence : inscriptions, attributions, baux, loyers, préavis, sorties.
@@ -91,8 +93,7 @@ public class GestionResidence {
 
     // ------------------------------------------------------------------ attribution
 
-    public Bail attribuerLogement(Etudiant e, TypeLogement typeSouhaite, boolean parking, boolean menage, boolean laverie,
-                                  boolean fibre, boolean assurance, LocalDate dateSignature) {
+    public Bail attribuerLogement(Etudiant e, TypeLogement typeSouhaite, Set<Option> options, LocalDate dateSignature) {
         System.out.println("--- Attribution d'un " + typeSouhaite + " à " + e.getNomComplet());
         Logement choisi = null;
         double loyer = 0;
@@ -102,8 +103,7 @@ public class GestionResidence {
             if (!l.estLibre()) continue;
             if (e.isPmr() && !l.estAccessiblePMR()) continue;
 
-            double loyerCandidat = calculateur.calculerLoyer(l, e.getProfil(), e.getEchelonBourse(), parking, menage,
-                    laverie, fibre, assurance);
+            double loyerCandidat = calculateur.calculerLoyer(l, e.getProfil(), e.getEchelonBourse(), options);
             double chargesCandidat = calculateur.calculerCharges(l);
             double total = loyerCandidat + chargesCandidat;
 
@@ -131,11 +131,7 @@ public class GestionResidence {
         compteurBail++;
         String id = "BAIL-" + String.format("%03d", compteurBail);
         Bail b = new Bail(id, e, choisi, dateSignature);
-        b.parking = parking;
-        b.menage = menage;
-        b.laverie = laverie;
-        b.fibre = fibre;
-        b.assurance = assurance;
+        b.setOptions(options);
         b.setLoyerHorsCharges(loyer);
         b.setCharges(charges);
 
@@ -150,6 +146,17 @@ public class GestionResidence {
                 "Bienvenue à la " + Residence.NOM + " ! Logement " + choisi.getNumero() + ", loyer "
                         + Utils.euros(b.getLoyerChargesComprises()) + " charges comprises.");
         return b;
+    }
+
+    public Bail attribuerLogement(Etudiant e, TypeLogement typeSouhaite, boolean parking, boolean menage, boolean laverie,
+                                  boolean fibre, boolean assurance, LocalDate dateSignature) {
+        Set<Option> options = new HashSet<>();
+        if (parking) options.add(Option.PARKING);
+        if (menage) options.add(Option.MENAGE);
+        if (laverie) options.add(Option.LAVERIE);
+        if (fibre) options.add(Option.FIBRE);
+        if (assurance) options.add(Option.ASSURANCE);
+        return attribuerLogement(e, typeSouhaite, options, dateSignature);
     }
 
     // ------------------------------------------------------------------ cycle de vie du bail

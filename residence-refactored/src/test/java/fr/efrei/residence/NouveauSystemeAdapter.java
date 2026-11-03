@@ -7,7 +7,6 @@ import fr.efrei.residence.contrat.DemandeLogement;
 import fr.efrei.residence.contrat.EtatBail;
 import fr.efrei.residence.contrat.EtatLogement;
 import fr.efrei.residence.contrat.Notification;
-import fr.efrei.residence.contrat.Option;
 import fr.efrei.residence.contrat.SystemeResidence;
 
 import java.time.LocalDate;
@@ -17,12 +16,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Branche le code historique sur les tests de contrat.
- * <p>
- * Tout le « bricolage » nécessaire pour tester l'ancien code (état statique à vider,
- * conversion des codes {@code String}, booléens d'options…) est confiné ici.
+ * Branche le code refactoré sur les tests de contrat.
  */
 public class NouveauSystemeAdapter implements SystemeResidence {
 
@@ -80,11 +77,11 @@ public class NouveauSystemeAdapter implements SystemeResidence {
         if (l == null) {
             return OptionalDouble.empty();
         }
-        Set<Option> o = d.options();
         Profil profil = d.profil() == null ? null : Profil.valueOf(d.profil().name());
-        return OptionalDouble.of(new CalculateurLoyer().calculerLoyer(l, profil, d.echelonBourse(),
-                o.contains(Option.PARKING), o.contains(Option.MENAGE), o.contains(Option.LAVERIE),
-                o.contains(Option.FIBRE), o.contains(Option.ASSURANCE)));
+        Set<Option> options = d.options().stream()
+                .map(o -> Option.valueOf(o.name()))
+                .collect(Collectors.toSet());
+        return OptionalDouble.of(new CalculateurLoyer().calculerLoyer(l, profil, d.echelonBourse(), options));
     }
 
     @Override
@@ -93,9 +90,10 @@ public class NouveauSystemeAdapter implements SystemeResidence {
         if (e == null) {
             return Optional.empty();
         }
-        Set<Option> o = d.options();
-        Bail b = gestion.attribuerLogement(e, TypeLogement.valueOf(d.type().name()), o.contains(Option.PARKING), o.contains(Option.MENAGE),
-                o.contains(Option.LAVERIE), o.contains(Option.FIBRE), o.contains(Option.ASSURANCE), d.dateSignature());
+        Set<Option> options = d.options().stream()
+                .map(o -> Option.valueOf(o.name()))
+                .collect(Collectors.toSet());
+        Bail b = gestion.attribuerLogement(e, TypeLogement.valueOf(d.type().name()), options, d.dateSignature());
         return Optional.ofNullable(b).map(Bail::getId);
     }
 
