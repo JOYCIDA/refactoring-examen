@@ -41,6 +41,7 @@ public class Etudiant {
     public String getAdresse() { return adresse; }
     public Profil getProfil() { return profil; }
     public void setProfil(Profil profil) { this.profil = profil; }
+    public ProfilStrategy getStrategy() { return ProfilStrategyFactory.creer(profil); }
     public int getEchelonBourse() { return echelonBourse; }
     public double getRessourcesMensuelles() { return ressourcesMensuelles; }
     public boolean isPmr() { return pmr; }

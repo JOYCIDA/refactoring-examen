@@ -11,19 +11,6 @@ public class GestionResidence {
 
     public static int compteurBail = 0;
 
-    public static final double FRAIS_DOSSIER_STANDARD = 100.0;
-    public static final double FRAIS_DOSSIER_INTERNATIONAL = 150.0;
-    public static final double FRAIS_DOSSIER_BOURSIER = 0.0;
-
-    public static final int PREAVIS_COURT_JOURS = 15;
-    public static final int PREAVIS_STANDARD_JOURS = 30;
-
-    public static final double TAUX_PENALITE_RETARD = 0.05;
-    public static final double PENALITE_MINIMALE = 10.0;
-
-    public static final double RATIO_SOLVABILITE_STANDARD = 3.0;
-    public static final double RATIO_SOLVABILITE_ALTERNANT = 2.0;
-
     private Database db = Database.getInstance();
     private CalculateurLoyer calculateur = new CalculateurLoyer();
     private LogementFactory fabriqueLogement = new LogementFactory();
@@ -120,16 +107,8 @@ public class GestionResidence {
             double chargesCandidat = calculateur.calculerCharges(l);
             double total = loyerCandidat + chargesCandidat;
 
-            // solvabilité
-            boolean solvable;
-            if (e.getProfil() == Profil.BOURSIER) {
-                solvable = true; // garantie Visale
-            } else if (e.getProfil() == Profil.ALTERNANT) {
-                solvable = e.getRessourcesMensuelles() >= total * RATIO_SOLVABILITE_ALTERNANT;
-            } else {
-                solvable = e.getRessourcesMensuelles() >= total * RATIO_SOLVABILITE_STANDARD;
-            }
-            if (!solvable) {
+            // solvabilité vérifiée via la stratégie de profil
+            if (!e.getStrategy().estSolvable(e.getRessourcesMensuelles(), total)) {
                 System.out.println("  " + l.getNumero() + " : ressources insuffisantes (" + Utils.euros(total) + "/mois)");
                 continue;
             }
@@ -160,25 +139,9 @@ public class GestionResidence {
         b.setLoyerHorsCharges(loyer);
         b.setCharges(charges);
 
-        // dépôt de garantie
-        double caution;
-        if (e.getProfil() == Profil.BOURSIER) {
-            caution = 0;
-        } else if (e.getProfil() == Profil.INTERNATIONAL) {
-            caution = loyer * 2;
-        } else {
-            caution = loyer;
-        }
-        b.setCaution(Utils.arrondir(caution));
-
-        // frais de dossier
-        if (e.getProfil() == Profil.BOURSIER) {
-            b.setFraisDossier(FRAIS_DOSSIER_BOURSIER);
-        } else if (e.getProfil() == Profil.INTERNATIONAL) {
-            b.setFraisDossier(FRAIS_DOSSIER_INTERNATIONAL);
-        } else {
-            b.setFraisDossier(FRAIS_DOSSIER_STANDARD);
-        }
+        // caution et frais de dossier via la stratégie de profil
+        b.setCaution(Utils.arrondir(e.getStrategy().calculerCaution(loyer)));
+        b.setFraisDossier(e.getStrategy().getFraisDossier());
 
         db.sauvegarderBail(b);
         System.out.println("  Bail " + id + " signé : " + choisi.getNumero() + ", " + Utils.euros(b.getLoyerChargesComprises())
@@ -220,11 +183,7 @@ public class GestionResidence {
         LocalDate echeance = YearMonth.parse(mois).atDay(5);
         double penalite = 0;
         if (datePaiement.isAfter(echeance)) {
-            if (b.getEtudiant().getProfil() != Profil.BOURSIER) {
-                penalite = b.getLoyerChargesComprises() * TAUX_PENALITE_RETARD;
-                if (penalite < PENALITE_MINIMALE) penalite = PENALITE_MINIMALE;
-                penalite = Utils.arrondir(penalite);
-            }
+            penalite = b.getEtudiant().getStrategy().calculerPenaliteRetard(b.getLoyerChargesComprises());
         }
         double du = Utils.arrondir(b.getLoyerChargesComprises() + penalite);
         b.paiements.add(new Paiement(mois, datePaiement, montant, penalite, du));
@@ -249,13 +208,7 @@ public class GestionResidence {
             System.out.println("Préavis impossible pour " + idBail);
             return false;
         }
-        int jours;
-        Profil profil = b.getEtudiant().getProfil();
-        if (profil == Profil.BOURSIER || profil == Profil.ALTERNANT) {
-            jours = PREAVIS_COURT_JOURS;
-        } else {
-            jours = PREAVIS_STANDARD_JOURS;
-        }
+        int jours = b.getEtudiant().getStrategy().getDureePreavis();
         b.setDateFin(date.plusDays(jours));
         b.setStatut(StatutBail.PREAVIS);
         db.mettreAJourBail(b);

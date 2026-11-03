@@ -12,10 +12,6 @@ public class CalculateurLoyer {
     public static final double COEFF_MEUBLE = 1.15;
     public static final double COEFF_RDC = 0.95;
 
-    public static final double TAUX_REMISE_BOURSE_PAR_ECHELON = 0.05;
-    public static final double PLAFOND_REMISE_BOURSIER = 0.30;
-    public static final double TAUX_REMISE_ALTERNANT = 0.10;
-
     public static final double CHARGES_STANDARD = 35.0;
     public static final double CHARGES_COLOCATION = 25.0;
 
@@ -55,14 +51,9 @@ public class CalculateurLoyer {
         if (fibre && l.getType() != TypeLogement.COLOCATION) loyer = loyer + PRIX_FIBRE; // fibre incluse en coloc
         if (assurance) loyer = loyer + PRIX_ASSURANCE;
 
-        // remise selon le profil
-        if (profil == Profil.BOURSIER) {
-            double taux = echelon * TAUX_REMISE_BOURSE_PAR_ECHELON;
-            if (taux > PLAFOND_REMISE_BOURSIER) taux = PLAFOND_REMISE_BOURSIER;
-            loyer = loyer * (1 - taux);
-        } else if (profil == Profil.ALTERNANT) {
-            loyer = loyer * (1 - TAUX_REMISE_ALTERNANT);
-        }
+        // remise selon le profil déléguée à la stratégie
+        ProfilStrategy strategy = ProfilStrategyFactory.creer(profil);
+        loyer = strategy.appliquerRemise(loyer, echelon);
 
         return Math.round(loyer * 100.0) / 100.0;
     }
