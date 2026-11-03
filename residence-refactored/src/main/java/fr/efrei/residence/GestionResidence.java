@@ -61,20 +61,20 @@ public class GestionResidence {
 
     // ------------------------------------------------------------------ logements
 
-    public Logement ajouterLogement(String type, String numero, double surface, int etage, boolean meuble, int param) {
+    public Logement ajouterLogement(TypeLogement type, String numero, double surface, int etage, boolean meuble, int param) {
         if (Residence.trouver(numero) != null) {
             System.out.println("Logement " + numero + " existe déjà");
             return null;
         }
         Logement l = null;
-        if (type.equals("STUDIO")) {
+        if (type == TypeLogement.STUDIO) {
             l = new Studio(numero, surface, etage, meuble);
-        } else if (type.equals("T1")) {
+        } else if (type == TypeLogement.T1) {
             l = new T1(numero, surface, etage, meuble);
-        } else if (type.equals("T2")) {
+        } else if (type == TypeLogement.T2) {
             l = new T2(numero, surface, etage, meuble, param);
-        } else if (type.equals("COLOCATION")) {
-            if (param < 2) param = 2;
+        } else if (type == TypeLogement.COLOCATION) {
+            if (param < Colocation.PLACES_MIN) param = Colocation.PLACES_MIN;
             l = new Colocation(numero, surface, etage, meuble, param);
         }
         if (l == null) {
@@ -88,14 +88,14 @@ public class GestionResidence {
 
     // ------------------------------------------------------------------ attribution
 
-    public Bail attribuerLogement(Etudiant e, String typeSouhaite, boolean parking, boolean menage, boolean laverie,
+    public Bail attribuerLogement(Etudiant e, TypeLogement typeSouhaite, boolean parking, boolean menage, boolean laverie,
                                   boolean fibre, boolean assurance, LocalDate dateSignature) {
         System.out.println("--- Attribution d'un " + typeSouhaite + " à " + e.getNomComplet());
         Logement choisi = null;
         double loyer = 0;
         double charges = 0;
         for (Logement l : Residence.logements) {
-            if (!l.getType().equals(typeSouhaite)) continue;
+            if (l.getType() != typeSouhaite) continue;
             if (!l.estLibre()) continue;
             if (e.isPmr() && !l.estAccessiblePMR()) continue;
 
@@ -351,16 +351,16 @@ public class GestionResidence {
         int nbPlacesColoc = 0, nbPlacesColocOccupees = 0;
         double surfaceBalcons = 0;
         for (Logement l : Residence.logements) {
-            if (l.getType().equals("STUDIO")) {
+            if (l.getType() == TypeLogement.STUDIO) {
                 nbStudios++;
                 if (!l.estLibre()) nbStudiosOccupes++;
-            } else if (l.getType().equals("T1")) {
+            } else if (l.getType() == TypeLogement.T1) {
                 nbT1++;
                 if (!l.estLibre()) nbT1Occupes++;
-            } else if (l.getType().equals("T2")) {
+            } else if (l.getType() == TypeLogement.T2) {
                 nbT2++;
                 if (!l.estLibre()) nbT2Occupes++;
-            } else if (l.getType().equals("COLOCATION")) {
+            } else if (l.getType() == TypeLogement.COLOCATION) {
                 nbPlacesColoc += l.getNombrePlaces();
                 nbPlacesColocOccupees += l.getColocataires().size();
             }

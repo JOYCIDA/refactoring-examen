@@ -8,8 +8,7 @@ public class Main {
         Residence.initialiser();
         GestionResidence gestion = new GestionResidence();
 
-        gestion.ajouterLogement("STUDIO", "C002", 16, 0, false, 0);
-        gestion.ajouterLogement("DUPLEX", "C003", 60, 1, true, 0);
+        gestion.ajouterLogement(TypeLogement.STUDIO, "C002", 16, 0, false, 0);
 
         System.out.println();
         Etudiant alice = gestion.inscrireEtudiant("Martin", "Alice", "alice.martin@mail.fr", "0601020304", null,
@@ -35,13 +34,13 @@ public class Main {
 
         System.out.println();
         LocalDate signature = LocalDate.of(2026, 8, 25);
-        Bail bA = gestion.attribuerLogement(alice, "STUDIO", true, false, false, false, true, signature);
-        Bail bB = gestion.attribuerLogement(bilal, "COLOCATION", false, true, true, true, false, signature);
-        Bail bC = gestion.attribuerLogement(chloe, "T1", false, false, true, true, true, signature);
-        Bail bD = gestion.attribuerLogement(diego, "T2", true, true, false, true, true, signature);
-        Bail bE = gestion.attribuerLogement(emma, "COLOCATION", false, false, false, true, false, signature);
-        Bail bG = gestion.attribuerLogement(gaelle, "STUDIO", false, true, false, true, false, signature);
-        Bail bH = gestion.attribuerLogement(hugo, "COLOCATION", false, true, false, false, true, signature);
+        Bail bA = gestion.attribuerLogement(alice, TypeLogement.STUDIO, true, false, false, false, true, signature);
+        Bail bB = gestion.attribuerLogement(bilal, TypeLogement.COLOCATION, false, true, true, true, false, signature);
+        Bail bC = gestion.attribuerLogement(chloe, TypeLogement.T1, false, false, true, true, true, signature);
+        Bail bD = gestion.attribuerLogement(diego, TypeLogement.T2, true, true, false, true, true, signature);
+        Bail bE = gestion.attribuerLogement(emma, TypeLogement.COLOCATION, false, false, false, true, false, signature);
+        Bail bG = gestion.attribuerLogement(gaelle, TypeLogement.STUDIO, false, true, false, true, false, signature);
+        Bail bH = gestion.attribuerLogement(hugo, TypeLogement.COLOCATION, false, true, false, false, true, signature);
 
         System.out.println();
         LocalDate rentree = LocalDate.of(2026, 9, 1);

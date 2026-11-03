@@ -9,7 +9,6 @@ import fr.efrei.residence.contrat.EtatLogement;
 import fr.efrei.residence.contrat.Notification;
 import fr.efrei.residence.contrat.Option;
 import fr.efrei.residence.contrat.SystemeResidence;
-import fr.efrei.residence.contrat.TypeLogement;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -54,8 +53,8 @@ public class NouveauSystemeAdapter implements SystemeResidence {
 
     @Override
     public boolean ajouterLogement(DemandeLogement d) {
-        int param = d.type() == TypeLogement.COLOCATION ? d.places() : d.surfaceBalcon();
-        return gestion.ajouterLogement(d.type().name(), d.numero(), d.surface(), d.etage(), d.meuble(), param) != null;
+        int param = d.type() == fr.efrei.residence.contrat.TypeLogement.COLOCATION ? d.places() : d.surfaceBalcon();
+        return gestion.ajouterLogement(TypeLogement.valueOf(d.type().name()), d.numero(), d.surface(), d.etage(), d.meuble(), param) != null;
     }
 
     @Override
@@ -70,7 +69,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
         } else {
             occupants = l.estLibre() ? 0 : 1;
         }
-        return Optional.of(new EtatLogement(l.getNumero(), TypeLogement.valueOf(l.getType()), l.getNombrePlaces(),
+        return Optional.of(new EtatLogement(l.getNumero(), fr.efrei.residence.contrat.TypeLogement.valueOf(l.getType().name()), l.getNombrePlaces(),
                 occupants, l.estAccessiblePMR()));
     }
 
@@ -93,7 +92,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
             return Optional.empty();
         }
         Set<Option> o = d.options();
-        Bail b = gestion.attribuerLogement(e, d.type().name(), o.contains(Option.PARKING), o.contains(Option.MENAGE),
+        Bail b = gestion.attribuerLogement(e, TypeLogement.valueOf(d.type().name()), o.contains(Option.PARKING), o.contains(Option.MENAGE),
                 o.contains(Option.LAVERIE), o.contains(Option.FIBRE), o.contains(Option.ASSURANCE), d.dateSignature());
         return Optional.ofNullable(b).map(Bail::getId);
     }
