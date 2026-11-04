@@ -5,9 +5,6 @@ import java.util.Set;
 
 public class CalculateurLoyer {
 
-    public static final double CHARGES_STANDARD = 35.0;
-    public static final double CHARGES_COLOCATION = 25.0;
-
     /**
      * Loyer mensuel hors charges, options comprises, remise déduite (via Decorator et Strategy).
      */
@@ -36,7 +33,6 @@ public class CalculateurLoyer {
     }
 
     public double calculerCharges(Logement l) {
-        if (l.getType() == TypeLogement.COLOCATION) return CHARGES_COLOCATION;
-        return CHARGES_STANDARD;
+        return TarifLogementFactory.creer(l.getType()).getCharges();
     }
 }
