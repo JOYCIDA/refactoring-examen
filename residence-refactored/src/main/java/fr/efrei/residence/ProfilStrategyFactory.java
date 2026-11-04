@@ -11,6 +11,7 @@ public class ProfilStrategyFactory {
             case BOURSIER -> new BoursierStrategy();
             case ALTERNANT -> new AlternantStrategy();
             case INTERNATIONAL -> new InternationalStrategy();
+            case SPORTIF -> new SportifStrategy();
         };
     }
 }

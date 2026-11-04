@@ -68,6 +68,7 @@ public class Bail {
         if (options.contains(Option.LAVERIE)) labels.add("laverie");
         if (options.contains(Option.FIBRE)) labels.add("fibre");
         if (options.contains(Option.ASSURANCE)) labels.add("assurance");
+        if (options.contains(Option.LOCAL_VELO)) labels.add("local vélo");
         if (labels.isEmpty()) return "aucune";
         return String.join(", ", labels);
     }

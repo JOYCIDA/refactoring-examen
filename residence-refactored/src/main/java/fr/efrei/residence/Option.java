@@ -1,5 +1,5 @@
 package fr.efrei.residence;
 
 public enum Option {
-    MENAGE, PARKING, LAVERIE, FIBRE, ASSURANCE
+    MENAGE, PARKING, LAVERIE, FIBRE, ASSURANCE, LOCAL_VELO
 }

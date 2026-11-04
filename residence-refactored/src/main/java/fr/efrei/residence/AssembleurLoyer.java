@@ -31,6 +31,9 @@ public class AssembleurLoyer {
             if (options.contains(Option.ASSURANCE)) {
                 chaine = new DecorateurAssurance(chaine);
             }
+            if (options.contains(Option.LOCAL_VELO)) {
+                chaine = new DecorateurLocalVelo(chaine);
+            }
         }
         return chaine;
     }
