@@ -122,11 +122,7 @@ public class GestionResidence {
             return null;
         }
 
-        if (choisi instanceof Colocation) {
-            choisi.ajouterColocataire(e);
-        } else {
-            choisi.loger(e);
-        }
+        choisi.loger(e);
 
         compteurBail++;
         String id = "BAIL-" + String.format("%03d", compteurBail);
@@ -274,11 +270,7 @@ public class GestionResidence {
             return false;
         }
         Logement l = b.getLogement();
-        if (l instanceof Colocation) {
-            l.retirerColocataire(b.getEtudiant());
-        } else {
-            l.liberer(b.getEtudiant());
-        }
+        l.liberer(b.getEtudiant());
         b.setStatut(StatutBail.ANNULE);
         db.mettreAJourBail(b);
         System.out.println("Bail " + idBail + " annulé, frais de dossier conservés : " + Utils.euros(b.getFraisDossier()));
@@ -338,7 +330,7 @@ public class GestionResidence {
                 if (!l.estLibre()) nbT2Occupes++;
             } else if (l.getType() == TypeLogement.COLOCATION) {
                 nbPlacesColoc += l.getNombrePlaces();
-                nbPlacesColocOccupees += l.getColocataires().size();
+                nbPlacesColocOccupees += l.getNombreOccupants();
             }
             try {
                 surfaceBalcons += l.getSurfaceBalcon();

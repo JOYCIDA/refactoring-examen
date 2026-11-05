@@ -61,14 +61,8 @@ public class NouveauSystemeAdapter implements SystemeResidence {
         if (l == null) {
             return Optional.empty();
         }
-        int occupants;
-        if (l instanceof Colocation) {
-            occupants = l.getColocataires().size();
-        } else {
-            occupants = l.estLibre() ? 0 : 1;
-        }
         return Optional.of(new EtatLogement(l.getNumero(), fr.efrei.residence.contrat.TypeLogement.valueOf(l.getType().name()), l.getNombrePlaces(),
-                occupants, l.estAccessiblePMR()));
+                l.getNombreOccupants(), l.estAccessiblePMR()));
     }
 
     @Override

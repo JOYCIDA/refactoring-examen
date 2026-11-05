@@ -17,12 +17,12 @@ public class Colocation extends Logement {
 
     @Override
     public void loger(Etudiant e) {
-        throw new UnsupportedOperationException("Utiliser ajouterColocataire() pour une colocation");
+        ajouterColocataire(e);
     }
 
     @Override
     public void liberer(Etudiant e) {
-        throw new UnsupportedOperationException("Utiliser retirerColocataire() pour une colocation");
+        retirerColocataire(e);
     }
 
     @Override
@@ -53,6 +53,11 @@ public class Colocation extends Logement {
 
     public int getNombrePlaces() {
         return places;
+    }
+
+    @Override
+    public int getNombreOccupants() {
+        return colocataires.size();
     }
 
     public double getSurfaceBalcon() {

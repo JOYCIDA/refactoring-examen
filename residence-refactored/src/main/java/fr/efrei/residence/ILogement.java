@@ -36,6 +36,8 @@ public interface ILogement {
 
     int getNombrePlaces();
 
+    int getNombreOccupants();
+
     // --- extérieur ---
     double getSurfaceBalcon();
 

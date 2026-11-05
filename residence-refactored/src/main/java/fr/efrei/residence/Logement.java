@@ -26,6 +26,7 @@ public abstract class Logement implements ILogement {
     public int getEtage() { return etage; }
     public boolean isMeuble() { return meuble; }
     public Etudiant getOccupant() { return occupant; }
+    public int getNombreOccupants() { return occupant == null ? 0 : 1; }
 
     public boolean estLibre() {
         return occupant == null;
