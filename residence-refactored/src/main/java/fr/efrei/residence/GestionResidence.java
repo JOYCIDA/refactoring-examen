@@ -16,6 +16,15 @@ public class GestionResidence {
     private Database db = Database.getInstance();
     private CalculateurLoyer calculateur = new CalculateurLoyer();
     private LogementFactory fabriqueLogement = new LogementFactory();
+    private final ServiceNotification notifications;
+    private final SmsService smsService;
+    private final CourrierService courrierService;
+
+    public GestionResidence(ServiceNotification notifications, SmsService smsService, CourrierService courrierService) {
+        this.notifications = notifications;
+        this.smsService = smsService;
+        this.courrierService = courrierService;
+    }
 
     // ------------------------------------------------------------------ étudiants
 
@@ -286,22 +295,7 @@ public class GestionResidence {
         for (Bail b : db.tousLesBaux()) {
             if (b.soldeDu <= 0) continue;
             if (b.getStatut() == StatutBail.ANNULE) continue;
-            Etudiant e = b.getEtudiant();
-            Canal canal = e.getCanalPrefere();
-            switch (canal) {
-                case EMAIL:
-                    EmailService.envoyer(e.getEmail(), "RELANCE - loyer impayé",
-                            "Bonjour " + e.getPrenom() + ", il reste " + Utils.euros(b.soldeDu) + " à régler sur le bail " + b.getId() + ".");
-                    break;
-                case SMS:
-                    new SmsService().envoyerSms(e.getTelephone(),
-                            "Campus Vert : " + Utils.euros(b.soldeDu) + " impayés sur " + b.getId());
-                    break;
-                case COURRIER:
-                    new CourrierService().imprimerEtPoster(e.getNomComplet(), e.getAdresse(), "Relance loyer impayé",
-                            "Il reste " + Utils.euros(b.soldeDu) + " à régler sur le bail " + b.getId() + ".");
-                    break;
-            }
+            notifications.relancer(b.getEtudiant(), b.getId(), b.soldeDu);
         }
     }
 
@@ -360,8 +354,8 @@ public class GestionResidence {
         r += "Loyers CC    : " + Utils.euros(Utils.arrondir(loyersMensuels)) + " / mois" + "\n";
         r += "Cautions     : " + Utils.euros(Utils.arrondir(cautions)) + "\n";
         r += "Impayés      : " + Utils.euros(Utils.arrondir(impayes)) + "\n";
-        r += "SMS envoyés  : " + SmsService.compteurSms + "\n";
-        r += "Timbres      : " + Utils.euros(Utils.arrondir(CourrierService.totalAffranchissement)) + "\n";
+        r += "SMS envoyés  : " + smsService.getCompteurSms() + "\n";
+        r += "Timbres      : " + Utils.euros(Utils.arrondir(courrierService.getTotalAffranchissement())) + "\n";
         r += "============================================================";
         return r;
     }
@@ -369,19 +363,6 @@ public class GestionResidence {
     // ------------------------------------------------------------------ notifications
 
     private void notifier(Etudiant e, String sujet, String message) {
-        Canal canal = e.getCanalPrefere();
-        if (canal == Canal.EMAIL) {
-            EmailService.envoyer(e.getEmail(), sujet, message);
-        } else if (canal == Canal.SMS) {
-            SmsService sms = new SmsService();
-            sms.envoyerSms(e.getTelephone(), sujet + " - " + message);
-        } else if (canal == Canal.COURRIER) {
-            CourrierService courrier = new CourrierService();
-            courrier.imprimerEtPoster(e.getNomComplet(), e.getAdresse(), sujet, message);
-        }
-        // les internationaux reçoivent toujours un email en plus (demande de l'administration)
-        if (e.getProfil() == Profil.INTERNATIONAL && canal != Canal.EMAIL) {
-            EmailService.envoyer(e.getEmail(), "[EN] " + sujet, message);
-        }
+        notifications.notifier(e, sujet, message);
     }
 }

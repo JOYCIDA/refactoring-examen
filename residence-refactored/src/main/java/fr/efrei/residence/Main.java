@@ -6,7 +6,10 @@ public class Main {
 
     public static void main(String[] args) {
         Residence.initialiser();
-        GestionResidence gestion = new GestionResidence();
+        SmsService sms = new SmsService();
+        CourrierService courrier = new CourrierService();
+        NotificationFactory fabrique = new NotificationFactory(new EmailService(), sms, courrier, new PushService());
+        GestionResidence gestion = new GestionResidence(new ServiceNotification(fabrique), sms, courrier);
 
         gestion.ajouterLogement(TypeLogement.STUDIO, "C002", 16, 0, false, 0);
 

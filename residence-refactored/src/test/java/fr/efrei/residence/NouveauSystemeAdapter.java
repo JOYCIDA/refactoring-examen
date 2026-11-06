@@ -24,21 +24,23 @@ import java.util.stream.Collectors;
 public class NouveauSystemeAdapter implements SystemeResidence {
 
     private GestionResidence gestion;
+    private EmailService email;
+    private SmsService sms;
+    private CourrierService courrier;
 
     @Override
     public void reinitialiser() {
         Database.getInstance();
         Database.etudiants.clear();
         Database.baux.clear();
-        EmailService.journal.clear();
-        SmsService.journal.clear();
-        CourrierService.journal.clear();
-        SmsService.compteurSms = 0;
-        CourrierService.totalAffranchissement = 0;
         Etudiant.compteur = 0;
         GestionResidence.compteurBail = 0;
         Residence.initialiser();
-        gestion = new GestionResidence();
+        email = new EmailService();
+        sms = new SmsService();
+        courrier = new CourrierService();
+        NotificationFactory fabrique = new NotificationFactory(email, sms, courrier, new PushService());
+        gestion = new GestionResidence(new ServiceNotification(fabrique), sms, courrier);
     }
 
     @Override
@@ -145,13 +147,13 @@ public class NouveauSystemeAdapter implements SystemeResidence {
     @Override
     public List<Notification> notifications() {
         List<Notification> notifications = new ArrayList<>();
-        for (String[] email : EmailService.journal) {
+        for (String[] email : email.getJournal()) {
             notifications.add(new Notification(fr.efrei.residence.contrat.Canal.EMAIL, email[0], email[1]));
         }
-        for (String[] sms : SmsService.journal) {
+        for (String[] sms : sms.getJournal()) {
             notifications.add(new Notification(fr.efrei.residence.contrat.Canal.SMS, sms[0], sms[1]));
         }
-        for (String[] courrier : CourrierService.journal) {
+        for (String[] courrier : courrier.getJournal()) {
             notifications.add(new Notification(fr.efrei.residence.contrat.Canal.COURRIER, courrier[0], courrier[1]));
         }
         return notifications;

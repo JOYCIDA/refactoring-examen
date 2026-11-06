@@ -20,7 +20,10 @@ class ExtensionPartieBTest {
         Residence.initialiser();
         Etudiant.compteur = 0;
         GestionResidence.compteurBail = 0;
-        gestion = new GestionResidence();
+        SmsService sms = new SmsService();
+        CourrierService courrier = new CourrierService();
+        NotificationFactory fabrique = new NotificationFactory(new EmailService(), sms, courrier, new PushService());
+        gestion = new GestionResidence(new ServiceNotification(fabrique), sms, courrier);
     }
 
     @Test
