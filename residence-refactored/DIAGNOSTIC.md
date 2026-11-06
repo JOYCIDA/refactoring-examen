@@ -25,9 +25,21 @@ Défauts relevés dans `residence-legacy` avant le refactoring.
 
 ## Palier 7
 
-Extensions faites : profil `SPORTIF` et option local vélo.
+Extensions faites : profil `SPORTIF`, option local vélo et canal `PUSH`.
 
 Fichiers existants modifiés : 5 (`Profil`, `Option`, `ProfilStrategyFactory`, `AssembleurLoyer`, `Bail`).
 Nouvelles classes : `SportifStrategy`, `DecorateurLocalVelo` et le test `ExtensionPartieBTest`.
 
-`DUPLEX` et `PUSH` ne sont pas faits.
+Canal `PUSH` : 2 fichiers existants modifiés (`Canal` pour ajouter la valeur, `NotificationFactory` pour ajouter le `case`).
+Nouvelles classes : `PushService`, `CanalPush` et le test `NotificationFactoryTest`.
+
+`DUPLEX` n'est pas fait.
+
+## Palier 5 (architecture et notifications)
+
+- `GestionResidence` ne fait plus que déléguer : `InscriptionService`, `AttributionService`, `CycleVieBailService`, `RelanceService`, `RapportService`.
+- La quittance est mise en forme par `QuittanceFormatter` (plus dans `Bail`).
+- Le singleton `Database` est remplacé par `BaseMemoire`, qui implémente `EtudiantRepository` et `BailRepository`, injectés par constructeur.
+- Les services d'envoi (`EmailService`, `SmsService`, `CourrierService`, `PushService`) sont des instances avec leur propre journal ; les canaux sont choisis par `NotificationFactory`.
+- Les compteurs `Etudiant.compteur`, `GestionResidence.compteurBail`, `SmsService.compteurSms` et les journaux statiques ont disparu.
+- Reste un `static` modifiable : `Residence.logements` (partie A, `LogementRepository`).
