@@ -6,10 +6,19 @@ public class Main {
 
     public static void main(String[] args) {
         Residence.initialiser();
+        BaseMemoire base = new BaseMemoire();
         SmsService sms = new SmsService();
         CourrierService courrier = new CourrierService();
         NotificationFactory fabrique = new NotificationFactory(new EmailService(), sms, courrier, new PushService());
-        GestionResidence gestion = new GestionResidence(new ServiceNotification(fabrique), sms, courrier);
+        ServiceNotification notifications = new ServiceNotification(fabrique);
+        GestionResidence gestion = new GestionResidence(
+                new InscriptionService(base),
+                new AttributionService(base, new CalculateurLoyer(), notifications),
+                new CycleVieBailService(base, notifications),
+                new RelanceService(base, notifications),
+                new RapportService(base, sms, courrier),
+                new LogementFactory());
+        QuittanceFormatter quittances = new QuittanceFormatter();
 
         gestion.ajouterLogement(TypeLogement.STUDIO, "C002", 16, 0, false, 0);
 
@@ -66,8 +75,8 @@ public class Main {
         gestion.payerLoyer(bC.getId(), "2026-10", LocalDate.of(2026, 10, 1), 1000);
 
         System.out.println();
-        System.out.println(bD.genererQuittance("2026-09"));
-        System.out.println(bA.genererQuittance("2026-10"));
+        System.out.println(quittances.generer(bD, "2026-09"));
+        System.out.println(quittances.generer(bA, "2026-10"));
 
         System.out.println();
         gestion.relancerImpayes();

@@ -23,30 +23,18 @@ import java.util.stream.Collectors;
  */
 public class NouveauSystemeAdapter implements SystemeResidence {
 
-    private GestionResidence gestion;
-    private EmailService email;
-    private SmsService sms;
-    private CourrierService courrier;
+    private GrapheDeTest graphe;
 
     @Override
     public void reinitialiser() {
-        Database.getInstance();
-        Database.etudiants.clear();
-        Database.baux.clear();
-        Etudiant.compteur = 0;
-        GestionResidence.compteurBail = 0;
         Residence.initialiser();
-        email = new EmailService();
-        sms = new SmsService();
-        courrier = new CourrierService();
-        NotificationFactory fabrique = new NotificationFactory(email, sms, courrier, new PushService());
-        gestion = new GestionResidence(new ServiceNotification(fabrique), sms, courrier);
+        graphe = new GrapheDeTest();
     }
 
     @Override
     public Optional<String> inscrire(DemandeInscription d) {
         Profil profil = d.profil() == null ? null : Profil.valueOf(d.profil().name());
-        Etudiant e = gestion.inscrireEtudiant(d.nom(), d.prenom(), d.email(), d.telephone(), d.adresse(),
+        Etudiant e = graphe.gestion.inscrireEtudiant(d.nom(), d.prenom(), d.email(), d.telephone(), d.adresse(),
                 profil, d.echelonBourse(), d.ressourcesMensuelles(), d.pmr(), Canal.valueOf(d.canalPrefere().name()));
         return Optional.ofNullable(e).map(Etudiant::getId);
     }
@@ -54,7 +42,7 @@ public class NouveauSystemeAdapter implements SystemeResidence {
     @Override
     public boolean ajouterLogement(DemandeLogement d) {
         int param = d.type() == fr.efrei.residence.contrat.TypeLogement.COLOCATION ? d.places() : d.surfaceBalcon();
-        return gestion.ajouterLogement(TypeLogement.valueOf(d.type().name()), d.numero(), d.surface(), d.etage(), d.meuble(), param) != null;
+        return graphe.gestion.ajouterLogement(TypeLogement.valueOf(d.type().name()), d.numero(), d.surface(), d.etage(), d.meuble(), param) != null;
     }
 
     @Override
@@ -89,13 +77,13 @@ public class NouveauSystemeAdapter implements SystemeResidence {
         Set<Option> options = d.options().stream()
                 .map(o -> Option.valueOf(o.name()))
                 .collect(Collectors.toSet());
-        Bail b = gestion.attribuerLogement(e, TypeLogement.valueOf(d.type().name()), options, d.dateSignature());
+        Bail b = graphe.gestion.attribuerLogement(e, TypeLogement.valueOf(d.type().name()), options, d.dateSignature());
         return Optional.ofNullable(b).map(Bail::getId);
     }
 
     @Override
     public Optional<EtatBail> consulter(String idBail) {
-        Bail b = Database.baux.get(idBail);
+        Bail b = graphe.base.trouverBail(idBail);
         if (b == null) {
             return Optional.empty();
         }
@@ -106,61 +94,61 @@ public class NouveauSystemeAdapter implements SystemeResidence {
 
     @Override
     public boolean entrer(String idBail, LocalDate date) {
-        return gestion.entrerDansLesLieux(idBail, date);
+        return graphe.gestion.entrerDansLesLieux(idBail, date);
     }
 
     @Override
     public boolean payer(String idBail, YearMonth mois, LocalDate date, double montant) {
-        return gestion.payerLoyer(idBail, mois.toString(), date, montant);
+        return graphe.gestion.payerLoyer(idBail, mois.toString(), date, montant);
     }
 
     @Override
     public boolean donnerPreavis(String idBail, LocalDate date) {
-        return gestion.donnerPreavis(idBail, date);
+        return graphe.gestion.donnerPreavis(idBail, date);
     }
 
     @Override
     public boolean sortir(String idBail, LocalDate date, double retenuesDegats) {
-        return gestion.sortir(idBail, date, retenuesDegats);
+        return graphe.gestion.sortir(idBail, date, retenuesDegats);
     }
 
     @Override
     public boolean annuler(String idBail) {
-        return gestion.annulerBail(idBail);
+        return graphe.gestion.annulerBail(idBail);
     }
 
     @Override
     public Optional<String> quittance(String idBail, YearMonth mois) {
-        return Optional.ofNullable(Database.baux.get(idBail)).map(b -> b.genererQuittance(mois.toString()));
+        return Optional.ofNullable(graphe.base.trouverBail(idBail)).map(b -> graphe.quittances.generer(b, mois.toString()));
     }
 
     @Override
     public void relancerImpayes() {
-        gestion.relancerImpayes();
+        graphe.gestion.relancerImpayes();
     }
 
     @Override
     public String rapport() {
-        return gestion.genererRapport();
+        return graphe.gestion.genererRapport();
     }
 
     @Override
     public List<Notification> notifications() {
         List<Notification> notifications = new ArrayList<>();
-        for (String[] email : email.getJournal()) {
+        for (String[] email : graphe.email.getJournal()) {
             notifications.add(new Notification(fr.efrei.residence.contrat.Canal.EMAIL, email[0], email[1]));
         }
-        for (String[] sms : sms.getJournal()) {
+        for (String[] sms : graphe.sms.getJournal()) {
             notifications.add(new Notification(fr.efrei.residence.contrat.Canal.SMS, sms[0], sms[1]));
         }
-        for (String[] courrier : courrier.getJournal()) {
+        for (String[] courrier : graphe.courrier.getJournal()) {
             notifications.add(new Notification(fr.efrei.residence.contrat.Canal.COURRIER, courrier[0], courrier[1]));
         }
         return notifications;
     }
 
-    private static Etudiant etudiant(String ref) {
-        for (Etudiant e : Database.etudiants.values()) {
+    private Etudiant etudiant(String ref) {
+        for (Etudiant e : graphe.base.tousLesEtudiants()) {
             if (e.getId().equals(ref)) return e;
         }
         return null;

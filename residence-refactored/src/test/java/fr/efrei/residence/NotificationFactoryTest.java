@@ -30,7 +30,7 @@ class NotificationFactoryTest {
     }
 
     private Etudiant etudiant(Profil profil, Canal canal) {
-        return new Etudiant("Martin", "Alice", "alice@mail.fr", "0601020304", "1 rue de Paris", profil, 0, 1500,
+        return new Etudiant("ETU-1", "Martin", "Alice", "alice@mail.fr", "0601020304", "1 rue de Paris", profil, 0, 1500,
                 false, canal);
     }
 
